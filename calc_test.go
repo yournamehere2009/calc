@@ -6,132 +6,138 @@ import (
 	"github.com/yournamehere2009/calc"
 )
 
+var addTests = []struct {
+	a        float64 // input
+	b        float64 // input
+	expected float64 // expected result
+}{
+	{2, 2, 4},
+	{10, 11, 21},
+	{-1, 1, 0},
+	{-1, 2, 1},
+}
+
+var subtractTests = []struct {
+	a        float64 // input
+	b        float64 // input
+	expected float64 // expected result
+}{
+	{2, 2, 0},
+	{10, 11, -1},
+	{-1, 1, -2},
+	{11, -2, 13},
+}
+
+var multiplyTests = []struct {
+	a        float64 // input
+	b        float64 // input
+	expected float64 // expected result
+}{
+	{2, 2, 4},
+	{10, 11, 110},
+	{-1, 1, -1},
+	{11, -2, -22},
+}
+
+var divideTests = []struct {
+	a        float64 // input
+	b        float64 // input
+	expected float64 // expected result
+}{
+	{2, 2, 1},
+	{10, 5, 2},
+	{5, 2, 2.5},
+	{-3, -1, 3},
+	{4, 0, 0}, // Expect an error
+}
+
+var parseFormulaTests = []struct {
+	f string  // formula
+	a float64 // expected expression 1
+	b float64 // expected expression 2
+	o string  // expected operator
+}{
+	{"10+2", 10, 2, "+"},
+	{"7-2", 7, 2, "-"},
+	{"15/5", 15, 5, "/"},
+	{"20*3", 20, 3, "*"},
+	{"3", 3, 0, "+"},
+}
+
+var computeFormulaTests = []struct {
+	f        string  // formula
+	expected float64 // expected result
+}{
+	{"10+2", 12},
+	{"(2+2)+2", 6},
+	{"(2.5+2)+2", 6.5},
+	{"(2.5+2)+(2+8)", 14.5},
+	{"(2.5*(2+5))+(2+(8-4))", 23.5},
+	{"((10*2)/5)", 4},
+}
+
 func TestAdd(t *testing.T) {
-	if calc.Add(1, 1) != 2 {
-		t.Error("expected 2")
+	for _, tt := range addTests {
+		result := calc.Add(tt.a, tt.b)
+
+		if result != tt.expected {
+			t.Errorf("Add(%f,%f): expected %f, actual %f", tt.a, tt.b, tt.expected, result)
+		}
 	}
 }
 
 func TestSubtract(t *testing.T) {
-	if calc.Subtract(2, 1) != 1 {
-		t.Error("expecting 1")
+	for _, tt := range subtractTests {
+		result := calc.Subtract(tt.a, tt.b)
+
+		if result != tt.expected {
+			t.Errorf("Subtract(%f,%f): expected %f, actual %f", tt.a, tt.b, tt.expected, result)
+		}
 	}
 }
 
 func TestMultiply(t *testing.T) {
-	if calc.Multiply(2, 2) != 4 {
-		t.Error("expecting 4")
+	for _, tt := range multiplyTests {
+		result := calc.Multiply(tt.a, tt.b)
+
+		if result != tt.expected {
+			t.Errorf("Multiply(%f,%f): expected %f, actual %f", tt.a, tt.b, tt.expected, result)
+		}
 	}
 }
 
 func TestDivide(t *testing.T) {
-	if result, err := calc.Divide(4, 2); result != 2 {
-		t.Errorf("Divide(4, 2), expecting 2, actual: %f, error: %v", result, err)
+	for _, tt := range divideTests {
+		result, err := calc.Divide(tt.a, tt.b)
+
+		if tt.b != 0 && result != tt.expected {
+			t.Errorf("Divide(%f,%f): expected %f, actual %f", tt.a, tt.b, tt.expected, result)
+		} else if tt.b == 0 && err == nil {
+			t.Errorf("Divide(%f,%f): expected a divide by zero error", tt.a, tt.b)
+		}
 	}
 }
 
-func TestDivideError(t *testing.T) {
-	if result, err := calc.Divide(4, 0); err == nil {
-		t.Errorf("Divide(4, 0), expecting 2, actual: %f, error: %v", result, err)
+func TestParseFormula(t *testing.T) {
+	for _, tt := range parseFormulaTests {
+		formula, _ := calc.ParseFormula(tt.f)
+
+		if formula.Operator != tt.o {
+			t.Errorf("ParseFormula(%v): expected operator %v, actual %v", tt.f, tt.o, formula.Operator)
+		} else if formula.Expression1 != tt.a {
+			t.Errorf("ParseFormula(%v): expected first expression %f, actual %f", tt.f, tt.a, formula.Expression1)
+		} else if formula.Expression2 != tt.b {
+			t.Errorf("ParseFormula(%v): expected second expression %f, actual %f", tt.f, tt.b, formula.Expression2)
+		}
 	}
 }
 
-func TestParseFormulaAddition(t *testing.T) {
-	formula, _ := calc.ParseFormula("10+2")
+func TestComputeFormula(t *testing.T) {
+	for _, tt := range computeFormulaTests {
+		result, _ := calc.ComputeFormula(tt.f)
 
-	if formula.Operator != "+" {
-		t.Error("expecting operator: addition")
-	} else if formula.Expression1 != 10 {
-		t.Error("expecting expression1: 10")
-	} else if formula.Expression2 != 2 {
-		t.Error("expecting expression2: 2")
-	}
-}
-
-func TestParseFormulaSubtraction(t *testing.T) {
-	formula, _ := calc.ParseFormula("7-2")
-
-	if formula.Operator != "-" {
-		t.Error("expecting operator: subtraction")
-	} else if formula.Expression1 != 7 {
-		t.Error("expecting expression1: 7")
-	} else if formula.Expression2 != 2 {
-		t.Error("expecting expression2: 2")
-	}
-}
-
-func TestParseFormulaDivision(t *testing.T) {
-	formula, _ := calc.ParseFormula("15/5")
-
-	if formula.Operator != "/" {
-		t.Error("expecting operator: division")
-	} else if formula.Expression1 != 15 {
-		t.Error("expecting expression1: 15")
-	} else if formula.Expression2 != 5 {
-		t.Error("expecting expression2: 5")
-	}
-}
-
-func TestParseFormulaMultiplication(t *testing.T) {
-	formula, _ := calc.ParseFormula("20*3")
-
-	if formula.Operator != "*" {
-		t.Error("expecting operator: multiplication")
-	} else if formula.Expression1 != 20 {
-		t.Error("expecting expression1: 20")
-	} else if formula.Expression2 != 3 {
-		t.Error("expecting expression2: 3")
-	}
-}
-
-func TestParseFormulaNoOperator(t *testing.T) {
-	if f, _ := calc.ParseFormula("3"); f.Operator != "+" {
-		t.Error("ParseFormula(3), expected: addition operator")
-	}
-}
-
-func TestComputeFormulaAdditionParens(t *testing.T) {
-	formula := "(2+2)+2"
-
-	result, _ := calc.ComputeFormula(formula)
-
-	if result != 6 {
-		t.Error("expecting result: 6")
-	}
-}
-
-func TestComputeFormulaAdditionParensFloat(t *testing.T) {
-	formula := "(2.5+2)+2"
-
-	result, _ := calc.ComputeFormula(formula)
-
-	if result != 6.5 {
-		t.Error("expecting result: 6.5")
-	}
-}
-
-func TestComputeFormulaAdditionMultiParensFloat(t *testing.T) {
-	formula := "(2.5+2)+(2+8)"
-
-	result, _ := calc.ComputeFormula(formula)
-
-	if result != 14.5 {
-		t.Error("expecting result: 14.5")
-	}
-}
-
-func TestComputeFormulaNestedParensFloat(t *testing.T) {
-	formula := "(2.5*(2+5))+(2+(8-4))"
-
-	if result, err := calc.ComputeFormula(formula); result != 23.5 {
-		t.Errorf("ComputeFormula(\"(2.5*(2+5))+(2+(8-4))\"), expected: 23.5, actual: %v, error: %v", result, err)
-	}
-}
-
-func TestComputeFormulaNestedParensDivisionFloat(t *testing.T) {
-	formula := "((10*2)/5)"
-
-	if result, err := calc.ComputeFormula(formula); result != 4 {
-		t.Errorf("ComputeFormula(%v), expected: 4 actual: %v, error: %v", formula, result, err)
+		if result != tt.expected {
+			t.Errorf("ComputeFormula(%v): expected %f, actual %f", tt.f, tt.expected, result)
+		}
 	}
 }
