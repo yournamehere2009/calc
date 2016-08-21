@@ -62,6 +62,7 @@ var parseFormulaTests = []struct {
 	{"15/5", 15, 5, "/"},
 	{"20*3", 20, 3, "*"},
 	{"3", 3, 0, "+"},
+	{"-3", -3, 0, "+"},
 }
 
 var computeFormulaTests = []struct {
@@ -74,6 +75,7 @@ var computeFormulaTests = []struct {
 	{"(2.5+2)+(2+8)", 14.5},
 	{"(2.5*(2+5))+(2+(8-4))", 23.5},
 	{"((10*2)/5)", 4},
+	{"3(3)", 9},
 }
 
 func TestAdd(t *testing.T) {
