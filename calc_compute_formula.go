@@ -8,23 +8,39 @@ import (
 )
 
 //ComputeFormula blah
-func ComputeFormula(formula string) (float64, error) {
+func ComputeFormula(formula string) (float64, []string, error) {
+	defer ClearSteps()
+
+	AddStep(formula)
+
 	var decomposedFormula string
 	var err error
+	var result float64
 	var f *FormulaParts
 
-	formula = convertShortHandMultiplication(formula)
-	formula = convertDoubleNegativeToAddition(formula)
+	if tmpFormula := convertShortHandMultiplication(formula); tmpFormula != formula {
+		formula = tmpFormula
+		AddStep(formula)
+	}
+
+	if tmpFormula := convertDoubleNegativeToAddition(formula); tmpFormula != formula {
+		formula = tmpFormula
+		AddStep(formula)
+	}
 
 	if decomposedFormula, err = decompose(formula); err != nil {
-		return 0, err
+		return 0, GetSteps(), err
 	}
 
 	if f, err = ParseFormula(decomposedFormula); err != nil {
-		return 0, err
+		return 0, GetSteps(), err
 	}
 
-	return compute(f)
+	result, err = compute(f)
+
+	AddStep(strconv.FormatFloat(result, 'f', 2, 64))
+
+	return result, GetSteps(), err
 }
 
 func decompose(formula string) (string, error) {
@@ -59,6 +75,8 @@ func decompose(formula string) (string, error) {
 		}
 
 		formula = strings.Replace(formula, formula[iOpening:iClosing+1], strconv.FormatFloat(float64(result), 'f', -1, 64), -1)
+
+		AddStep(formula)
 
 		if formula, err = decompose(formula); err != nil {
 			return "", err

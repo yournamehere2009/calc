@@ -78,6 +78,25 @@ var computeFormulaTests = []struct {
 	{"3(3)", 9},
 }
 
+var addWorkStepTests = []struct {
+	step       string // formula
+	timesToAdd int    // formula
+	totalSteps int    // expected result
+}{
+	{"10+2", 1, 1},
+	{"10+2", 3, 3},
+}
+
+var showWorkTests = []struct {
+	f          string // formula
+	totalSteps int
+	expected   float64 // expected result
+}{
+	{"10+2", 2, 12},
+	{"10--2", 3, 12},
+	{"(10+2)-3", 3, 9},
+}
+
 func TestAdd(t *testing.T) {
 	for _, tt := range addTests {
 		result := calc.Add(tt.a, tt.b)
@@ -136,10 +155,36 @@ func TestParseFormula(t *testing.T) {
 
 func TestComputeFormula(t *testing.T) {
 	for _, tt := range computeFormulaTests {
-		result, _ := calc.ComputeFormula(tt.f)
+		result, _, _ := calc.ComputeFormula(tt.f)
 
 		if result != tt.expected {
 			t.Errorf("ComputeFormula(%v): expected %f, actual %f", tt.f, tt.expected, result)
 		}
+	}
+}
+
+func TestWorkStep(t *testing.T) {
+	for _, tt := range addWorkStepTests {
+		for i := 0; i < tt.timesToAdd; i++ {
+			calc.AddStep(tt.step)
+		}
+
+		workSteps := calc.GetSteps()
+
+		if len(workSteps) != tt.totalSteps {
+			t.Errorf("AddStep(%v) Show Work: expected steps %d, actual %d, %v", tt.step, tt.totalSteps, len(workSteps), workSteps)
+		}
+		calc.ClearSteps()
+	}
+}
+
+func TestComputeFormulaShowWork(t *testing.T) {
+	for _, tt := range showWorkTests {
+		_, workSteps, _ := calc.ComputeFormula(tt.f)
+
+		if len(workSteps) != tt.totalSteps {
+			t.Errorf("ComputeFormula(%v) Show Work: expected steps %d, actual %d, %v", tt.f, tt.totalSteps, len(workSteps), workSteps)
+		}
+		calc.ClearSteps()
 	}
 }
