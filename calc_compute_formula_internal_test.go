@@ -12,6 +12,7 @@ var computeTests = []struct {
 	{"10*5", 50},
 	{"4", 4},
 	{"-3*2", -6},
+	{"3*-2", -6},
 }
 
 var decomposeTests = []struct {

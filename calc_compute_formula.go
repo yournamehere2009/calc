@@ -87,6 +87,8 @@ func decompose(formula string) (string, error) {
 
 func compute(fp *FormulaParts) (float64, error) {
 	switch fp.Operator {
+	case "^":
+		return Power(fp.Expression1, fp.Expression2), nil
 	case "+":
 		return Add(fp.Expression1, fp.Expression2), nil
 	case "-":

@@ -3,7 +3,6 @@ package calc
 import (
 	"strconv"
 	"strings"
-	//"errors"
 )
 
 // FormulaParts blah
@@ -17,7 +16,7 @@ type FormulaParts struct {
 func ParseFormula(formula string) (*FormulaParts, error) {
 	f := new(FormulaParts)
 	oIndex := -1
-	operators := [4]string{"+", "-", "*", "/"}
+	operators := [5]string{"^", "*", "/", "+", "-"}
 
 	// First get the operator
 	for i := 0; i < len(operators); i++ {

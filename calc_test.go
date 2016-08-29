@@ -51,6 +51,22 @@ var divideTests = []struct {
 	{4, 0, 0}, // Expect an error
 }
 
+var powerTests = []struct {
+	a        float64 // input
+	b        float64 // input
+	expected float64 // expected result
+}{
+	{2, 2, 4},
+	{1, 2, 1},
+	{1, 7, 1},
+	{5, 0, 1},
+	{1, 0, 1},
+	{0, 0, 1},
+	{3, 3, 27},
+	{-3, 3, -27},
+	{2, -1, .5},
+}
+
 var parseFormulaTests = []struct {
 	f string  // formula
 	a float64 // expected expression 1
@@ -63,6 +79,10 @@ var parseFormulaTests = []struct {
 	{"20*3", 20, 3, "*"},
 	{"3", 3, 0, "+"},
 	{"-3", -3, 0, "+"},
+	{"3*-3", 3, -3, "*"},
+	{"3^3", 3, 3, "^"},
+	{"-3^3", -3, 3, "^"},
+	{"2^-1", 2, -1, "^"},
 }
 
 var computeFormulaTests = []struct {
@@ -76,6 +96,11 @@ var computeFormulaTests = []struct {
 	{"(2.5*(2+5))+(2+(8-4))", 23.5},
 	{"((10*2)/5)", 4},
 	{"3(3)", 9},
+	{"3^3", 27},
+	{"-3^3", -27},
+	{"2^-1", .5},
+	{"(1+1)^-1", .5},
+	{"((2^2)-2)^-1", .5},
 }
 
 var addWorkStepTests = []struct {
@@ -135,6 +160,16 @@ func TestDivide(t *testing.T) {
 			t.Errorf("Divide(%f,%f): expected %f, actual %f", tt.a, tt.b, tt.expected, result)
 		} else if tt.b == 0 && err == nil {
 			t.Errorf("Divide(%f,%f): expected a divide by zero error", tt.a, tt.b)
+		}
+	}
+}
+
+func TestPower(t *testing.T) {
+	for _, tt := range powerTests {
+		result := calc.Power(tt.a, tt.b)
+
+		if result != tt.expected {
+			t.Errorf("Power(%f,%f): expected %f, actual %f", tt.a, tt.b, tt.expected, result)
 		}
 	}
 }
