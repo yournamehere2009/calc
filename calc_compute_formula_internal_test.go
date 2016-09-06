@@ -20,13 +20,14 @@ var decomposeTests = []struct {
 	expected string // expected result
 }{
 	{"(2+2)", "4"},
-	{"2 * (3+5)", "2 * 8"},
+	{"2 * (3+5)", "16"},
 	{"(2*(3+5))", "16"},
-	{"(2+5) * (3+5)", "7 * 8"},
+	{"(2+5) * (3+5)", "56"},
 	{"((10*2)/5)", "4"},
 	{"(-3)", "-3"},
 	{"-3", "-3"},
 	{"3", "3"},
+	{"5+(5+(5+5))", "20"},
 }
 
 var convertShortHandMultiplicationTests = []struct {
@@ -42,6 +43,13 @@ var convertDoubleNegativeToAdditionTests = []struct {
 }{
 	{"3--3", "3+3"},
 	{"-3--3", "-3+3"},
+}
+
+var removeSpacesTests = []struct {
+	f        string // input
+	expected string // expected result
+}{
+	{"2 + 2", "2+2"},
 }
 
 func TestCompute(t *testing.T) {
@@ -85,6 +93,16 @@ func TestConvertDoubleNegativeToAddition(t *testing.T) {
 
 		if formula != tt.expected {
 			t.Errorf("convertDoubleNegativeToAddition(%v): expected %v, actual %v", tt.f, tt.expected, formula)
+		}
+	}
+}
+
+func TestRemoveSpaces(t *testing.T) {
+	for _, tt := range removeSpacesTests {
+		formula := removeSpaces(tt.f)
+
+		if formula != tt.expected {
+			t.Errorf("removeSpaces(%v): expected %v, actual %v", tt.f, tt.expected, formula)
 		}
 	}
 }

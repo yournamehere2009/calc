@@ -83,6 +83,10 @@ var parseFormulaTests = []struct {
 	{"3^3", 3, 3, "^"},
 	{"-3^3", -3, 3, "^"},
 	{"2^-1", 2, -1, "^"},
+	{"2+2+2", 4, 2, "+"},
+	{"2*2+2", 4, 2, "+"},
+	{"2+2*3", 2, 6, "+"},
+	{"2-2*3", 2, 6, "-"},
 }
 
 var computeFormulaTests = []struct {
@@ -101,6 +105,7 @@ var computeFormulaTests = []struct {
 	{"2^-1", .5},
 	{"(1+1)^-1", .5},
 	{"((2^2)-2)^-1", .5},
+	{"(2*3+5)*(8*3-6)^2", 3564},
 }
 
 var addWorkStepTests = []struct {
@@ -120,6 +125,7 @@ var showWorkTests = []struct {
 	{"10+2", 2, 12},
 	{"10--2", 3, 12},
 	{"(10+2)-3", 3, 9},
+	{"2+2+2", 2, 6},
 }
 
 func TestAdd(t *testing.T) {

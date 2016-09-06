@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 //ComputeFormula blah
@@ -16,7 +17,12 @@ func ComputeFormula(formula string) (float64, []string, error) {
 	var decomposedFormula string
 	var err error
 	var result float64
-	var f *FormulaParts
+
+	//Clean the formula
+	if tmpFormula := removeSpaces(formula); tmpFormula != formula {
+		formula = tmpFormula
+		AddStep(formula)
+	}
 
 	if tmpFormula := convertShortHandMultiplication(formula); tmpFormula != formula {
 		formula = tmpFormula
@@ -28,17 +34,13 @@ func ComputeFormula(formula string) (float64, []string, error) {
 		AddStep(formula)
 	}
 
+	// Process the formula
 	if decomposedFormula, err = decompose(formula); err != nil {
 		return 0, GetSteps(), err
 	}
 
-	if f, err = ParseFormula(decomposedFormula); err != nil {
-		return 0, GetSteps(), err
-	}
-
-	result, err = compute(f)
-
-	AddStep(strconv.FormatFloat(result, 'f', 2, 64))
+	// Output the results
+	result, _ = strconv.ParseFloat(decomposedFormula, 64)
 
 	return result, GetSteps(), err
 }
@@ -68,6 +70,12 @@ func decompose(formula string) (string, error) {
 
 		contents := formula[iOpening+1 : iClosing]
 
+		if strings.Index(contents, "(") != -1 {
+			if contents, err = decompose(contents); err != nil {
+				return "", err
+			}
+		}
+
 		if f, err = ParseFormula(contents); err != nil {
 			return "", err
 		} else if result, err = compute(f); err != nil {
@@ -81,7 +89,17 @@ func decompose(formula string) (string, error) {
 		if formula, err = decompose(formula); err != nil {
 			return "", err
 		}
+	} else {
+		if f, err = ParseFormula(formula); err != nil {
+			return "", err
+		} else if result, err = compute(f); err != nil {
+			return "", err
+		}
+
+		formula = strconv.FormatFloat(float64(result), 'f', -1, 64)
+		AddStep(formula)
 	}
+
 	return formula, err
 }
 
@@ -124,6 +142,17 @@ func convertDoubleNegativeToAddition(formula string) string {
 			formula = strings.Replace(formula, formula[negativeIndex:negativeIndex+2], "+", -1)
 		}
 	}
+
+	return formula
+}
+
+func removeSpaces(formula string) string {
+	formula = strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, formula)
 
 	return formula
 }
